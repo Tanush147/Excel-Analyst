@@ -106,7 +106,7 @@ function App() {
           <FileUpload onFileLoaded={handleFileLoaded} isLoading={isLoadingFile} />
         </div>
         <footer className="p-6 text-center text-slate-400 text-sm">
-          Powered by Gemini 2.5 Flash
+          Powered by Tanush Dey
         </footer>
       </div>
     );
