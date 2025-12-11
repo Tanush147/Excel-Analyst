@@ -155,7 +155,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           </button>
         </form>
         <div className="text-center mt-2">
-            <p className="text-xs text-slate-400">Tanush Dey the great Yo Yo</p>
+            <p className="text-xs text-slate-400">Powered by Tanush Dey</p>
         </div>
       </div>
     </div>
