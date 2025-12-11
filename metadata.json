@@ -1,0 +1,4 @@
+{
+  "name": "Excel AI Analyst",
+  "description": "A smart Excel analysis tool that allows you to upload spreadsheets and ask questions using natural language. Powered by Gemini, it parses data locally and provides intelligent insights."
+}
