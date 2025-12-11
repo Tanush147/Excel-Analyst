@@ -1,7 +1,7 @@
 import { AnalysisPlan, SheetSchema, AnalysisResult, AggregationType, FilterOperator } from "../types";
 
 const API_KEY = import.meta.env.VITE_API_KEY;
-const MODEL_ID = "tngtech/deepseek-r1t2-chimera:free";
+const MODEL_ID = "mistralai/devstral-2512:free";
 const API_BASE_URL = "https://openrouter.ai/api/v1";
 
 async function callOpenRouter(messages: Array<{ role: string; content: string }>, responseFormat?: { type: string; schema: any }): Promise<string> {
@@ -10,34 +10,49 @@ async function callOpenRouter(messages: Array<{ role: string; content: string }>
     messages: messages,
   };
 
-  if (responseFormat) {
-    body.response_format = responseFormat;
+  if (responseFormat && responseFormat.type) {
+    body.response_format = { type: responseFormat.type };
   }
 
-  const response = await fetch(`${API_BASE_URL}/chat/completions`, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${API_KEY}`,
-      "Content-Type": "application/json",
-      "HTTP-Referer": window.location.origin,
-      "X-Title": "Excel AI Analyst"
-    },
-    body: JSON.stringify(body)
+  console.log('🔵 OpenRouter Request:', {
+    model: MODEL_ID,
+    messageCount: messages.length,
+    hasResponseFormat: !!responseFormat
   });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`OpenRouter API error: ${response.status} - ${errorText}`);
+  try {
+    const response = await fetch(`${API_BASE_URL}/chat/completions`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${API_KEY}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": window.location.origin,
+        "X-Title": "Excel AI Analyst"
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('🔴 OpenRouter API Error:', response.status, errorText);
+      throw new Error(`OpenRouter API error: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log('🟢 OpenRouter Response:', data);
+
+    const content = data.choices?.[0]?.message?.content;
+
+    if (!content) {
+      console.error('🔴 No content in response:', data);
+      throw new Error("No content in API response");
+    }
+
+    return content;
+  } catch (error) {
+    console.error('🔴 OpenRouter Call Failed:', error);
+    throw error;
   }
-
-  const data = await response.json();
-  const content = data.choices?.[0]?.message?.content;
-
-  if (!content) {
-    throw new Error("No content in API response");
-  }
-
-  return content;
 }
 
 export const generateExecutionPlan = async (
@@ -94,7 +109,7 @@ ${JSON.stringify(jsonSchema, null, 2)}`;
 
   const responseText = await callOpenRouter(
     [{ role: "user", content: prompt }],
-    { type: "json_object", schema: jsonSchema }
+    { type: "json_object", schema: undefined }
   );
 
   return JSON.parse(responseText) as AnalysisPlan;
